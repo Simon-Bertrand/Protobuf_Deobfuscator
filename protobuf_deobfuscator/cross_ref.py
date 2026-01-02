@@ -10,8 +10,8 @@ from protobuf_deobfuscator.hungarian import HungarianPathGenerator
 
 
 def find_references(id_map: str, tree: List[PAlls]) -> List[PAlls]:
-    # id_map is full_name (e.g. game.v1.Color)
-    # field.type might be 'Color' or 'game.v1.Color'
+    # id_map is full_name (e.g. package.v1.Color)
+    # field.type might be 'Color' or 'package.v1.Color'
     def match_type(field_type, target_full_name):
         if field_type == target_full_name:
             return True
