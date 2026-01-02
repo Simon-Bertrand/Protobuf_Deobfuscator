@@ -1,0 +1,283 @@
+syntax = "proto3";
+
+package game.v1;
+
+// Basic Enums
+enum Faction {
+  FACTION_NONE = 0;
+  FACTION_HUMAN = 1;
+  FACTION_ALIEN = 2;
+  FACTION_ROBOT = 3;
+}
+
+enum ItemRarity {
+  COMMON = 0;
+  UNCOMMON = 1;
+  RARE = 2;
+  LEGENDARY = 3;
+}
+
+// Leaf Messages
+message Vector3 {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+}
+
+message Quaternion {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+  float w = 4;
+}
+
+message Color {
+  int32 r = 1;
+  int32 g = 2;
+  int32 b = 3;
+  float a = 4;
+}
+
+message UUID {
+  string value = 1;
+}
+
+// Nested usage and Cross-References
+message Transform {
+  Vector3 position = 1;
+  Quaternion rotation = 2;
+  Vector3 scale = 3; // Cross-ref: Vector3 used twice here
+}
+
+// Complex Item definition with OneOf
+message ItemAttributes {
+  float durability = 1;
+  float weight = 2;
+  ItemRarity rarity = 3;
+}
+
+message WeaponDetails {
+  int32 damage = 1;
+  float fire_rate = 2;
+}
+
+message ArmorDetails {
+  int32 defense = 1;
+  int32 magic_resist = 2;
+}
+
+message ConsumableDetails {
+  int32 hp_restore = 1;
+  int32 mp_restore = 2;
+}
+
+message Item {
+  UUID id = 1;
+  string name = 2;
+  ItemAttributes attributes = 3;
+  
+  // OneOf demonstrating disjoint fields
+  oneof item_type {
+    WeaponDetails weapon = 4;
+    ArmorDetails armor = 5;
+    ConsumableDetails consumable = 6;
+  }
+}
+
+// Map Fields Usage
+message Inventory {
+  int32 max_slots = 1;
+  // Map of basic type to Message
+  map<int32, Item> slots = 2; 
+  // Map of string to basic type
+  map<string, int32> currency = 3;
+}
+
+// Deep Nesting and List usage
+message Skill {
+  string id = 1;
+  int32 level = 2;
+  float cooldown = 3;
+  repeated string tags = 4;
+}
+
+message CharacterStats {
+  int32 health = 1;
+  int32 mana = 2;
+  int32 stamina = 3;
+  float move_speed = 4;
+}
+
+// Major node using everything
+message Player {
+  UUID id = 1;
+  string username = 2;
+  Faction faction = 3;
+  
+  Transform transform = 4;
+  CharacterStats stats = 5;
+  Inventory inventory = 6;
+  
+  repeated Skill active_skills = 7;
+  repeated Skill passive_skills = 8;
+  
+  Color custom_color = 9;
+  
+  bool is_online = 10;
+  int64 created_at = 11;
+  
+  SocialProfile social = 12;
+  repeated Quest quest_log = 13;
+}
+
+// Sibling node to Player (similar but different)
+message NPC {
+  int32 npc_id = 1;
+  string debug_name = 2;
+  Faction faction = 3; // Cross-ref: Faction used by Player too
+  
+  Transform transform = 4; // Cross-ref: Transform
+  CharacterStats stats = 5; // Cross-ref: Stats
+  
+  // NPC logic specific
+  float aggression_radius = 6;
+  repeated Vector3 patrol_path = 7; // List of message
+  
+  map<string, string> behavior_tree_params = 8;
+  
+  // Deep Nesting Example
+  message AIConfig {
+      float reaction_time = 1;
+      
+      message Pathfinding {
+           string algorithm = 1;
+           bool can_climb = 2;
+           
+           message NavMeshSettings {
+               float agent_height = 1;
+               float agent_radius = 2;
+               int32 max_slope = 3;
+           }
+           NavMeshSettings nav_settings = 3;
+      }
+      Pathfinding pathfinding = 2;
+  }
+  AIConfig ai_config = 9;
+}
+
+// Global World State Container
+message WorldState {
+  int64 timestamp = 1;
+  
+  repeated Player players = 2;
+  repeated NPC npcs = 3;
+  
+  // Singleton environment settings
+  message Environment {
+    float time_of_day = 1;
+    float rain_intensity = 2;
+    Vector3 wind_direction = 3;
+  }
+  
+  Environment env = 4;
+  
+  map<int32, Transform> static_props = 5;
+  
+  repeated Party active_parties = 6;
+}
+
+message ServerConfig {
+  string region = 1;
+  int32 max_players = 2;
+  bool maintenance_mode = 3;
+  repeated string admin_ids = 4;
+}
+
+// --- New Complex Systems ---
+
+enum QuestType {
+  QUEST_MAIN = 0;
+  QUEST_SIDE = 1;
+  QUEST_DAILY = 2;
+  QUEST_EVENT = 3;
+}
+
+enum TargetType {
+  TARGET_KILL = 0;
+  TARGET_COLLECT = 1;
+  TARGET_INTERACT = 2;
+}
+
+message QuestObjective {
+  TargetType type = 1;
+  string description = 2;
+  
+  // Cross-references
+  oneof target {
+    int32 target_npc_id = 3; // Refers to NPC
+    UUID target_item_id = 4; // Refers to Item
+    string location_id = 5;
+  }
+  
+  int32 current_count = 6;
+  int32 required_count = 7;
+}
+
+message Quest {
+  UUID id = 1;
+  string title = 2;
+  QuestType type = 3;
+  
+  repeated QuestObjective objectives = 4;
+  
+  // Rewards
+  int32 gold_reward = 5;
+  int32 xp_reward = 6;
+  repeated Item item_rewards = 7; // Cross-ref Item
+}
+
+message SocialProfile {
+  repeated UUID friends = 1;
+  repeated UUID blocked_users = 2;
+  string status_message = 3;
+  int32 reputation_score = 4;
+}
+
+message Party {
+  UUID party_id = 1;
+  UUID leader_id = 2;
+  
+  // Cross-ref Player (Simulated via UUID or direct inclusion if possible, but Player includes Quest which includes Item...)
+  // Let's use simple member references to avoid infinite recursion in definition if we used Player directly
+  // But for the graph, let's include a summary
+  message PartyMember {
+      UUID player_id = 1;
+      string name = 2;
+      bool is_ready = 3;
+      CharacterStats live_stats = 4; // Cross-ref CharacterStats
+  }
+  
+  repeated PartyMember members = 3;
+  bool loot_share = 4;
+}
+
+message Missions {
+  repeated Quest missions = 1;
+  Vector3 position = 2;
+}
+
+
+message Stories {
+  string id = 1;
+  int32 target_id = 2;
+  int64 start_time = 3;
+  uint32 min_level = 4;
+  uint64 total_xp_reward = 5;
+  bool is_available = 6;
+  float spawn_rate = 7;
+  double longitude = 8;
+  double latitude = 9;
+  bytes raw_data = 10;
+  sint32 score_modifier = 11;
+  fixed32 checksum = 12;
+}

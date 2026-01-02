@@ -1,0 +1,316 @@
+syntax = "proto3";
+
+package game.v2;
+
+// Basic Enums
+enum FactionOBF {
+  // Software update: Removed NONE, added NEW_FACTION
+  FACTION_HUMAN = 0; // Renumbered
+  FACTION_ALIEN = 1;
+  FACTION_ROBOT = 2;
+  FACTION_ZOMBIE = 3; // New
+}
+
+enum ItemRarityOBF {
+  COMMON = 0;
+  UNCOMMON = 1;
+  RARE = 2;
+  LEGENDARY = 3;
+  MYTHIC = 4; // Update: New rarity
+}
+
+// Leaf Messages
+message Vector3OBF {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+  // Obfuscator added dummy field
+  int32 dummy_padding = 100;
+}
+
+message QuaternionOBF {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+  float w = 4;
+}
+
+message ColorOBF {
+  int32 r = 1;
+  int32 g = 2;
+  int32 b = 3;
+  // Update: Alpha removed or changed logic
+}
+
+message UUIDOBF {
+  string value = 1;
+  int64 cached_hash = 2; // Software update: optimization field
+}
+
+// Nested usage and Cross-References
+message TransformOBF {
+  Vector3OBF position = 1;
+  QuaternionOBF rotation = 2;
+  Vector3OBF scale = 3; 
+  Vector3OBF velocity = 4; // Software update: New physics field
+}
+
+// Complex Item definition with OneOf
+message ItemAttributesOBF {
+  float durability = 1;
+  float weight = 2;
+  ItemRarityOBF rarity = 3;
+  bool is_broken = 4; // Update
+}
+
+message WeaponDetailsOBF {
+  int32 damage = 1;
+  float fire_rate = 2;
+  float reload_speed = 3; // Update
+}
+
+message ArmorDetailsOBF {
+  int32 defense = 1;
+  int32 magic_resist = 2;
+  // Dummy field
+  string obfuscator_junk = 99;
+}
+
+message ConsumableDetailsOBF {
+  int32 hp_restore = 1;
+  int32 mp_restore = 2;
+}
+
+message ItemOBF {
+  UUIDOBF id = 1;
+  string name = 2;
+  ItemAttributesOBF attributes = 3;
+  
+  oneof item_type {
+    WeaponDetailsOBF weapon = 4;
+    ArmorDetailsOBF armor = 5;
+    ConsumableDetailsOBF consumable = 6;
+    // Update: New item type
+    string quest_item_data = 7;
+  }
+}
+
+// Map Fields Usage
+message InventoryOBF {
+  int32 max_slots = 1;
+  map<int32, ItemOBF> slots = 2; 
+  map<string, int32> currency = 3;
+  // Dummy map added by obfuscator code gen
+  map<int32, bool> dirty_flags = 4;
+}
+
+// Deep Nesting and List usage
+message SkillOBF {
+  string id = 1;
+  int32 level = 2;
+  float cooldown = 3;
+  repeated string tags = 4;
+  int32 mana_cost = 5; // Update
+}
+
+message CharacterStatsOBF {
+  int32 health = 1;
+  int32 mana = 2;
+  int32 stamina = 3;
+  float move_speed = 4;
+  float crit_chance = 5; // Update
+}
+
+message PlayerOBF {
+  UUIDOBF id = 1;
+  string username = 2;
+  FactionOBF faction = 3;
+  
+  TransformOBF transform = 4;
+  CharacterStatsOBF stats = 5;
+  InventoryOBF inventory = 6;
+  
+  repeated SkillOBF active_skills = 7;
+  repeated SkillOBF passive_skills = 8;
+  
+  ColorOBF custom_color = 9;
+  
+  // Software update: is_online removed, replaced by last_seen
+  int64 last_seen = 10;
+  int64 created_at = 11;
+  
+  SocialProfileOBF social = 12;
+  repeated QuestOBF quests = 13;
+  
+  // Obfuscator control flow flattening debris
+  int32 control_check = 999;
+}
+
+message NPCOBF {
+  int32 npc_id = 1;
+  string debug_name = 2;
+  FactionOBF faction = 3;
+  
+  TransformOBF transform = 4;
+  CharacterStatsOBF stats = 5;
+  
+  float aggression_radius = 6;
+  repeated Vector3OBF patrol_path = 7;
+  
+  map<string, string> behavior_tree_params = 8;
+  
+  // Update: Loot table reference
+  string loot_table_id = 9;
+
+  // Deep Nesting Example (Obfuscated)
+  message AIConfigOBF {
+      float reaction_time = 1;
+      
+      message PathfindingOBF {
+           string algorithm = 1;
+           // Update: Removed can_climb, added jump_height
+           float jump_height = 2;
+           
+           message NavMeshSettingsOBF {
+               float agent_height = 1;
+               float agent_radius = 2;
+               int32 max_slope = 3;
+               // Update: New field
+               bool ignore_water = 4;
+           }
+           NavMeshSettingsOBF nav_settings = 3;
+      }
+      PathfindingOBF pathfinding = 2;
+  }
+  AIConfigOBF ai_config = 10;
+}
+
+// Obfuscator generated junk message
+message ObfuscatorTrapOBF {
+    int32 val1 = 1;
+    string val2 = 2;
+}
+
+message WorldStateOBF {
+  int64 timestamp = 1;
+  
+  repeated PlayerOBF players = 2;
+  repeated NPCOBF npcs = 3;
+  
+  message EnvironmentOBF {
+    float time_of_day = 1;
+    float rain_intensity = 2;
+    Vector3OBF wind_direction = 3;
+    float fog_density = 4; // Update
+  }
+  
+  EnvironmentOBF env = 4;
+  
+  map<int32, TransformOBF> static_props = 5;
+  
+  repeated PartyOBF parties = 6;
+  
+  ObfuscatorTrapOBF junk_data = 100;
+}
+
+message ServerConfigOBF {
+  string region = 1;
+  int32 max_players = 2;
+  bool maintenance_mode = 3;
+  repeated string admin_ids = 4;
+  int32 tick_rate = 5; // Update: Tick rate configurable
+}
+
+// --- New Complex Systems (Obfuscated) ---
+
+enum QuestTypeOBF {
+  // Update: Reordered
+  QT_MAIN = 0;
+  QT_DAILY = 1; 
+  QT_SIDE = 2;
+  QT_EVENT = 3;
+}
+
+enum TargetTypeOBF {
+  TT_KILL = 0;
+  TT_COLLECT = 1;
+  TT_INTERACT = 2;
+  TT_VISIT = 3; // Update: New target type
+}
+
+message QuestObjectiveOBF {
+  // Update: description removed/renamed
+  string text_instruction = 1;
+  TargetTypeOBF type = 2; // Reordered
+  
+  oneof target {
+    int32 npc_ref = 3;
+    UUIDOBF item_ref = 4;
+    // Update: Location is now int32 hash
+    int32 location_hash = 5;
+  }
+  
+  int32 count = 6;
+  int32 required = 7;
+  bool optional = 8; // Update: New field
+}
+
+message QuestOBF {
+  UUIDOBF quest_id = 1;
+  string display_name = 2;
+  QuestTypeOBF category = 3;
+  
+  repeated QuestObjectiveOBF tasks = 4;
+  
+  int32 gold = 5;
+  int32 xp = 6;
+  repeated ItemOBF items = 7;
+  
+  // Software update: Deadline added
+  int64 expiry_timestamp = 8;
+}
+
+message SocialProfileOBF {
+  repeated UUIDOBF friend_list = 1;
+  // Update: Blocked users removed (software update)
+  string bio = 3;
+  int32 karma = 4;
+}
+
+message PartyOBF {
+  UUIDOBF id = 1;
+  UUIDOBF leader = 2;
+  
+  message MemberOBF {
+      UUIDOBF uid = 1;
+      string display = 2;
+      bool ready_check = 3;
+      CharacterStatsOBF current_stats = 4;
+      int32 ping = 5; // Update: New field
+  }
+  
+  repeated MemberOBF members = 3;
+  bool is_loot_shared = 4;
+  
+  string voice_channel_token = 5; // Update: New field
+}
+
+message MissionsOBF {
+  repeated QuestOBF missions = 1;
+  Vector3OBF position = 2;
+}
+
+message StoriesOBF {
+  string id = 1;
+  int32 target_id = 2;
+  int64 start_time = 3;
+  uint32 min_level = 4;
+  uint64 total_xp_reward = 5;
+  bool is_available = 6;
+  float spawn_rate = 7;
+  double longitude = 8;
+  double latitude = 9;
+  bytes raw_data = 10;
+  sint32 score_modifier = 11;
+  fixed32 checksum = 12;
+}

@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "protobuf_deobfuscator"
+version = "0.1.0"
+description = "A bottom-up QAP-based graph matching method for deobfuscating and aligning Google Protobuf code graphs via recursive structural and cross-reference similarity, using deepest-first traversal of message hierarchies."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "GNU General Public License v3.0"}
+authors = [
+  {name = "Simon BERTRAND", email = "simonbertrand.contact@gmail.com"}
+]
+dependencies = [
+    "numpy",
+    "scipy",
+    "pandas",
+    "networkx",
+    "proto-schema-parser"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["protobuf_deobfuscator*"]
+
+[project.scripts]
+protobuf_deobf = "protobuf_deobfuscator.cli:main"
