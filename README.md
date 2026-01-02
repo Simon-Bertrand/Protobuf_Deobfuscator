@@ -192,7 +192,7 @@ The easiest way to use the tool is via the command line interface:
 protobuf_deobf example/obf.proto example/ref.proto -k 5 -t 0.6
 ```
 ```text
-Found 22 mappings:
+Found 23 mappings:
 game.v1.NPC -> game.v2.NPCOBF (Score: 0.696)
 game.v1.WorldState -> game.v2.WorldStateOBF (Score: 0.650)
 game.v1.Party -> game.v2.PartyOBF (Score: 0.618)
@@ -213,6 +213,7 @@ game.v1.ServerConfig -> game.v2.ServerConfigOBF (Score: 0.800)
 game.v1.Quest -> game.v2.QuestOBF (Score: 0.714)
 game.v1.SocialProfile -> game.v2.SocialProfileOBF (Score: 0.655)
 game.v1.Missions -> game.v2.MissionsOBF (Score: 0.741)
+game.v1.Stories -> game.v2.StoriesOBF (Score: 1.000)
 game.v1.Faction -> game.v2.FactionOBF (Score: 0.820)
 game.v1.TargetType -> game.v2.TargetTypeOBF (Score: 0.685)
 ```
