@@ -108,13 +108,17 @@ We use specific mathematical formulas to handle the "Fuzzy" matching requirement
 
 ### 4.1 Intrinsic Similarity (Structure)
 **Primitive Fields**:
-$$ Sim(f_O, f_R) = \mathbb{I}(Type_O == Type_R) \times \mathbb{I}(Card_O == Card_R) $$
+
+$$Sim(f_O, f_R) = \mathbb{I}(Type_O == Type_R) \times \mathbb{I}(Card_O == Card_R)$$
+
 *Strict equality required. We never map `int` to `string`.*
 
 **Enums (Smooth Length Decay)**:
 
 Instead of $\frac{\min(len(E_A), len(E_B))}{\max(len(E_A), len(E_B))}$, we use:
-$$ Sim(E_A, E_B) = \max \left( 0, 1.0 - \frac{|len(E_A) - len(E_B)|}{\min(len(E_A), len(E_B))} \right) $$
+
+$$Sim(E_A, E_B) = \max \left( 0, 1.0 - \frac{|len(E_A) - len(E_B)|}{\min(len(E_A), len(E_B))} \right)$$
+
 *Allows for minor additions/removals of enum values.*
 
 **Messages (Recursive Hungarian)**:
@@ -124,25 +128,33 @@ To match Message A vs Message B:
     -   **Cycle Handling**: If recursion loops ($A \to B \to A$), return heuristic $\frac{Size_A}{Size_B}$.
 2.  Solve Assignment: $S_{hungarian} = \text{LinearSumAssignment}(M)$.
 3.  Compute Normalized Score:
-    $$ S_{final} = \frac{\sum_{assigned} S_{hungarian}}{\max(Count_A, Count_B)} $$
+
+    $$S_{final} = \frac{\sum_{assigned} S_{hungarian}}{\max(Count_A, Count_B)}$$
+
 *This effectively penalizes size mismatches linearly. A message with 20 fields matching a message with 2 fields will have a maximum score of $2/20 = 0.1$.*
 
 **Maps (`PMapField`)**:
 A map `map<K, V>` is treated as a tuple.
-$$ Sim(Map_O, Map_R) = \frac{Sim(K_O, K_R) + Sim(V_O, V_R)}{2} $$
+
+$$Sim(Map_O, Map_R) = \frac{Sim(K_O, K_R) + Sim(V_O, V_R)}{2}$$
 
 **OneOfs (`POneOf`)**:
 Treated as a message where all fields are optional. We use the **Hungarian Algorithm** to align the fields inside the OneOf block, multiplied by the **SizeMatch** penalty for structural drift.
-$$ Sim(Union_O, Union_R) = \text{HungarianCost}(Fields_O, Fields_R) \times SizeMatch(Fields_O, Fields_R) $$
+
+$$Sim(Union_O, Union_R) = \text{HungarianCost}(Fields_O, Fields_R) \times SizeMatch(Fields_O, Fields_R)$$
 
 ### 4.2 Extrinsic Similarity (Context)
 To distinguish identical structures (e.g., `Vector3 {x,y,z}` used in `Player` vs `Enemy`), we look at the parents.
-$$ S_{extrinsic}(A, B) = \text{Hungarian}(Parents(A), Parents(B)) $$
+
+$$S_{extrinsic}(A, B) = \text{Hungarian}(Parents(A), Parents(B))$$
+
 *This answers: "Are the objects that use A similar to the objects that use B?"*
 
 ### 4.3 Total Score
 The two scores are fused with a dynamic weight:
-$$ S_{total} = \frac{S_{intrinsic} + W \cdot S_{extrinsic}}{1 + W} $$
+
+$$S_{total} = \frac{S_{intrinsic} + W \cdot S_{extrinsic}}{1 + W}$$
+
 *Typically, extrinsic weight $W$ is zero when no cross-reference is available, meaning only the structural similarity is considered.*
 
 ---
