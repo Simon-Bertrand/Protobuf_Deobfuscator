@@ -174,7 +174,7 @@ The project relies on a standard Data Science stack for optimization:
 Since this project is not published on PyPI, you must clone the repository and install it locally using `pip`:
 
 ```bash
- pip install https://github.com/Simon-Bertrand/Protobuf_Desobfuscator/archive/main.zip
+ pip install https://github.com/Simon-Bertrand/Protobuf_Deobfuscator/archive/main.zip
 ```
 
 After installation, the CLI tool `protobuf_deobf` will be available in your path.
